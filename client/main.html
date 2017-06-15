@@ -1,0 +1,969 @@
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+
+<body>
+</body>
+
+<template name="App_body">
+    <div id="wrapper">
+        {{> nav}}
+        <div id="page-wrapper">
+            <div class="row">
+                <div class="col-lg-12">
+                    <h4 >{{{title}}} {{{fav}}}</h4>
+                </div>
+                <!-- /.col-lg-12 -->
+            </div>
+            {{> Template.dynamic template=main}}
+        </div>
+        <!-- /#page-wrapper -->
+    </div>
+</template>
+
+<template name="nav">
+    <!-- Navigation -->
+    <nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">BTSBots {{_ "wallet"}}</a>
+        </div>
+        <!-- /.navbar-header -->
+        <ul class="nav navbar-top-links navbar-right">
+            {{# if currentUser}} 
+            <li class="dropdown">
+                <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                    {{_ 'Bots'}}<i class="fa fa-caret-down"></i>
+                </a>
+                <ul class="dropdown-menu dropdown-messages">
+                    <li><a href="#"><label class="checkbox-inline"> <input type="checkbox" {{isBotsEnable}} onchange='bots_enable(this)'>{{_ 'Enable Bot'}}</label></a></li>
+                    <li class="divider"></li>
+                    <li><a href="/settings"><i class="fa fa-gear fa-fw"></i>{{_ 'Settings'}}</a> </li>
+                </ul>
+                <!-- /.dropdown-tasks -->
+            </li>
+            {{/if}}
+            <li class="dropdown">
+                <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                    <i class="fa fa-bitcoin fa-fw"></i> <i class="fa fa-caret-down"></i>
+                </a>
+                <ul class="dropdown-menu dropdown-messages">
+                    {{#each asset_lists}}
+                    <li>
+                        <a href="/a/{{a}}">
+                            <div>
+                                <p>
+                                <strong>{{a}}</strong> <span class="pull-right text-muted">
+                                    <i class="fa fa-cny fa-fw"></i>{{toFixed2 (price a) 4}}</span>
+                                </p>
+                            </div>
+                        </a>
+                    </li>
+                    {{/each}}
+                </ul>
+                <!-- /.dropdown-tasks -->
+            </li>
+            {{# if currentUser}} 
+            <li class="dropdown">
+                <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                    <i class="fa fa-user fa-fw"></i> <i class="fa fa-caret-down"></i>
+                </a>
+                <ul class="dropdown-menu dropdown-messages">
+                    <li><a href="/u/{{currentUser.username}}"><i class="fa fa-user-md fa-fw"></i>{{currentUser.username}}</a> </li>
+                    {{#each user_lists}}
+                    <li><a href="/u/{{u}}"><i class="fa fa-user-md fa-fw"></i>{{u}}</a> </li>
+                    {{/each}}
+                    <li class="divider"></li>
+                    <li><a href="/logout"><i class="fa fa-sign-out fa-fw"></i>{{_ 'Logout'}}</a> </li>
+                </ul>
+                <!-- /.dropdown-messages -->
+            </li>
+            {{else}}
+            <li><a href="/login"><i class="fa fa-sign-in fa-fw"></i> {{_ 'Login'}}</a> </li>
+            {{/if}}
+            <li class="dropdown">
+                <button class="btn btn-info" data-toggle="dropdown">{{_ "Lang"}}</button>
+                <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
+                    <li><a href="#" class="lang" data-lang="en">English</a></li>
+                    <li><a href="#" class="lang" data-lang="zh-CN">中文简体</a></li>
+                    <li><a href="#" class="lang" data-lang="zh-TW">中文繁体</a></li>
+                    <li><a href="#" class="lang" data-lang="ru">русский</a></li>
+                </ul>
+            </li>
+        </ul>
+        <!-- /.navbar-top-links -->
+
+
+        <div class="navbar-default sidebar" role="navigation">
+            <div class="sidebar-nav navbar-collapse collapse">
+                <ul class="nav" id="side-menu">
+                    <li class="dropdown">
+                        <a href="/">
+                            <span class=" text-muted"> {{getSyncInfo}}</span>
+                            <span class="pull-right text-muted">
+                                <i class="fa fa-cny fa-fw"></i>
+                                {{toFixed2 getTotalVolume 2}}
+                            </span>
+                        </a>
+                    </li>
+                </ul>
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        {{_ 'Market'}} 
+                    </div>
+                    <div class="panel-body" style="height:300px; overflow-y: scroll;padding-left:0;padding-right:0;padding-top:0;padding-bottom:0;">
+                        <ul class="nav" id="side-menu3">
+                            {{#each market_lists}}
+                            <li>
+                                <a href="/m/{{a1}}_{{a2}}"> <i class="fa fa-exchange fa-fw"></i>
+                                    {{a1}}/{{a2}}<span class="pull-right text-muted">{{price2 a1 a2}}</span>
+                                </a>
+                            </li>
+                            {{/each}}
+                        </ul>
+                    </div>
+                </div>
+                {{> chat_room}}
+            </div>
+            <!-- /.sidebar-collapse -->
+        </div>
+        <!-- /.navbar-static-side -->
+    </nav>
+</template>
+
+<template name="chat_room">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            {{_ 'Chat room'}}
+        </div>
+        <div class="panel-body" id="chat_box" style="height:300px; overflow-y: scroll;padding-top:0;padding-bottom:0;">
+            {{#each messages}}
+            {{> chat_item}}
+            {{/each}}
+        </div>
+        <div class="panel-foot">
+            <div class="form-group input-group">
+                {{# if currentUser}} 
+                <input type="text" id="chat_msg" class="form-control">
+                {{else}}
+                <input type="text" id="chat_msg" class="form-control" disabled>
+                {{/if}}
+                <span class="input-group-btn">
+                    <button id="sendMsg" class="btn btn-default" type="button"><i class="fa fa-send-o"></i> </button>
+                </span>
+            </div>
+        </div>
+    </div>
+</template>
+
+<template name="chat_item">
+    <p><strong><a href="/u/{{user}}" style="{{style user}}">{{user}}</a></strong> : <i>{{msg}}</i></p>
+</template>
+
+<template name="main_page">
+    <div class="row">
+        {{> main_page_av lists=a_volume}}
+        {{> main_page_uv header=(_ 'user volume' 1) color="yellow" lists=u_volumes_1}}
+        {{> main_page_uv header=(_ 'user volume' 28) color="red" lists=u_volumes_28}}
+        {{> main_page_uv header=(_ 'user profit' 28) color="green" lists=u_profits_28}}
+    </div>
+    {{> trx_list_page}}
+</template>
+
+<template name="user_page">
+    {{> user_page_b color='green' lists=list_balance}}
+    {{> user_page_av type=(_ "Volume") title=(_ 'trade volume' 1) color="yellow" lists=a_volume_1}}
+    {{> user_page_av type=(_ "Volume") title=(_ 'trade volume' 28)  color="red" lists=a_volume_28}}
+    {{> user_page_av type=(_ "Change") title=(_ 'trade change' 28)  color="green" lists=a_balance_28}}
+    {{> trx_list_page}}
+</template>
+
+<template name="asset_page">
+    {{> asset_page_u color='green' lists=a_holder}}
+    {{> asset_page_mv color ='yellow' lists=m_volume}}
+    {{> asset_page_uv title=(_ 'user volume' 1) color='red' lists=u_volume_1}}
+    {{> asset_page_uv title=(_ 'user volume' 28) color='green' lists=u_volume_28}}
+    {{> trx_list_page}}
+</template>
+
+<template name="null_page">
+</template>
+
+<template name="market_page">
+    {{> order_book type="buy" color='green' lists=buy}}
+    {{> order_book type="sell" color='red' lists=sell}}
+    {{> trx_list_page}}
+</template>
+
+<template name="exchange_page">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <i class="fa fa-exchange fa-fw"></i> {{_ 'exchange price'}}
+                </div>
+                <!-- .panel-heading -->
+                <div class="panel-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>{{_ "Asset"}}</th>
+                                    <th class="text-right">{{_ "Balance"}}(CNY)</th>
+                                    <th class="text-right">{{_ "Price buy"}}(BTS)</th>
+                                    <th class="text-right">{{_ "Price sell"}}(BTS)</th>
+                                    <th class="text-right">{{_ "Price buy"}}(OPEN.BTC)</th>
+                                    <th class="text-right">{{_ "Price sell"}}(OPEN.BTC)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {{#each asset_list}}
+                                <tr>
+                                    <td>{{a}}</td>
+                                    <td align="right">{{b}}</td>
+                                    <td align="right">{{format_price 'buy' p_b1}}</td>
+                                    <td align="right">{{format_price 'sell' p_s1}}</td>
+                                    <td align="right">{{format_price 'buy' p_b2}}</td>
+                                    <td align="right">{{format_price 'sell' p_s2}}</td>
+                                </tr>
+                                {{/each}}
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- /.table-responsive -->
+                </div>
+                <!-- .panel-body -->
+            </div>
+            <!-- /.panel -->
+        </div>
+        <!-- /.col-lg-12 -->
+    </div>
+    <!-- /.row -->
+</template>
+
+<template name="main_page_av">
+    <div class="col-lg-3">
+        <div class="panel panel-green">
+            <div class="panel-heading">
+                {{_ "asset volume" 1}}
+                <div class="pull-right">
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-default btn-xs" id="btn_limit">
+                            {{_ "more"}}
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <!-- /.panel-heading -->
+            <div class="panel-body" style="padding-left:0;padding-right:0;padding-top:0;padding-bottom:0;">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>{{_ "Name"}}</th>
+                                <th>{{_ "Price"}}(CNY)</th>
+                                <th>{{_ "Volume"}}(CNY)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{#each lists}}
+                            <tr>
+                                <td><a href="/a/{{a}}" style="{{style a}}"> {{a}} </a> </td>
+                                <td align="right"><i class="fa fa-cny fa-fw"></i>{{toFixed2 (price a) 4}}</td>
+                                <td align="right"><i class="fa fa-cny fa-fw"></i>{{toFixed2 v 2}} </td>
+                            </tr>
+                            {{/each}}
+                        </tbody>
+                    </table>
+                </div>
+                <!-- /.table-responsive -->
+            </div>
+            <!-- /.panel-body -->
+        </div>
+        <!-- /.panel -->
+    </div>
+    <!-- /.col-lg-6 -->
+</template>
+
+<template name="main_page_uv">
+    <div class="col-lg-3">
+        <div class="panel panel-{{color}}">
+            <div class="panel-heading">
+                {{header}}
+            </div>
+            <!-- /.panel-heading -->
+            <div class="panel-body" style="padding-left:0;padding-right:0;padding-top:0;padding-bottom:0;">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>{{_ "Name"}}</th>
+                                <th>{{_ "Volume"}}(CNY)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{# if price_ready}}
+                            {{#each lists}}
+                            <tr>
+                                <td><a href="/u/{{u}}" style="{{style u}}"> {{u}} </a> </td>
+                                <td align="right"><i class="fa fa-cny fa-fw"></i>{{toFixed2 v 2}}</td>
+                            </tr>
+                            {{/each}}
+                            {{/if}}
+                        </tbody>
+                    </table>
+                </div>
+                <!-- /.table-responsive -->
+            </div>
+            <!-- /.panel-body -->
+        </div>
+        <!-- /.panel -->
+    </div>
+    <!-- /.col-lg-6 -->
+</template>
+
+<template name="user_page_av">
+    <div class="col-lg-3">
+        <div class="panel panel-{{color}}">
+            <div class="panel-heading">
+                {{title}}
+                <span class="pull-right">
+                    <i class="fa fa-cny"></i>
+                    {{toFixed2 (total lists) 2}}
+                </span>
+            </div>
+            <!-- /.panel-heading -->
+            <div class="panel-body" style="padding-left:0;padding-right:0;padding-top:0;padding-bottom:0;">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>{{_ "Name"}}</th>
+                                <th>{{type}}</th>
+                                <th>{{_ "Value"}}(CNY)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{#each lists}}
+                            <tr>
+                                <td><a href="/a/{{a}}" style="{{style a}}"> {{a}} </a> </td>
+                                <td align="right">{{toFixed2 v 2}}</td>
+                                <td align="right"><i class="fa fa-cny fa-fw"></i>{{toFixed2 value 2}}</td>
+                            </tr>
+                            {{/each}}
+                        </tbody>
+                    </table>
+                </div>
+                <!-- /.table-responsive -->
+            </div>
+            <!-- /.panel-body -->
+        </div>
+        <!-- /.panel -->
+    </div>
+    <!-- /.col-lg-6 -->
+</template>
+
+<template name="user_page_b">
+    <div class="col-lg-3">
+        <div class="panel panel-{{color}}">
+            <div class="panel-heading">
+                {{_ "Balance2"}}
+                <span class="pull-right">
+                    <i class="fa fa-cny"></i>
+                    {{toFixed2 (total lists) 2}}
+                </span>
+            </div>
+            <!-- /.panel-heading -->
+            <div class="panel-body" style="padding-left:0;padding-right:0;padding-top:0;padding-bottom:0;">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>{{_ "Asset"}}</th>
+                                <th>{{_ "Balance2"}}</th>
+                                <th>{{_ "Value"}}(CNY)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{#each lists}}
+                            <tr>
+                                <td><a href="/a/{{a}}" style="{{style a}}"> {{a}} </a> </td>
+                                <td align="right">{{toFixed2 b 4}}</td>
+                                <td align="right">{{toFixed2 v 4}}</td>
+                            </tr>
+                            {{/each}}
+                        </tbody>
+                    </table>
+                </div>
+                <!-- /.table-responsive -->
+            </div>
+            <!-- /.panel-body -->
+        </div>
+        <!-- /.panel -->
+    </div>
+    <!-- /.col-lg-6 -->
+</template>
+
+<template name="asset_page_mv">
+    <div class="col-lg-3">
+        <div class="panel panel-{{color}}">
+            <div class="panel-heading">
+                {{_ "market volume" 1}}
+            </div>
+            <!-- /.panel-heading -->
+            <div class="panel-body" style="padding-left:0;padding-right:0;padding-top:0;padding-bottom:0;">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>{{_ "Name"}}</th>
+                                <th>{{_ "Price"}}({{get_asset_symbol}})</th>
+                                <th>{{_ "Volume"}}({{get_asset_symbol}})</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{#each lists}}
+                            <tr>
+                                <td><a href="/m/{{base}}_{{quote}}" style="{{style quote}}"> {{quote}} </a> </td>
+                                <td align="right">{{price2 base quote}}</td>
+                                <td align="right">{{toFixed2 volume 2}}</td>
+                            </tr>
+                            {{/each}}
+                        </tbody>
+                    </table>
+                </div>
+                <!-- /.table-responsive -->
+            </div>
+            <!-- /.panel-body -->
+        </div>
+        <!-- /.panel -->
+    </div>
+    <!-- /.col-lg-6 -->
+</template>
+
+<template name="asset_page_uv">
+    <div class="col-lg-3">
+        <div class="panel panel-{{color}}">
+            <div class="panel-heading">
+                {{title}}
+            </div>
+            <!-- /.panel-heading -->
+            <div class="panel-body" style="padding-left:0;padding-right:0;padding-top:0;padding-bottom:0;">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>{{_ "Name"}}</th>
+                                <th>{{_ "Volume"}}({{get_asset_symbol}})</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{#each lists}}
+                            <tr>
+                                <td><a href="/u/{{u}}" style="{{style u}}"> {{u}} </a> </td>
+                                <td align="right">{{toFixed2 v 2}}</td>
+                            </tr>
+                            {{/each}}
+                        </tbody>
+                    </table>
+                </div>
+                <!-- /.table-responsive -->
+            </div>
+            <!-- /.panel-body -->
+        </div>
+        <!-- /.panel -->
+    </div>
+    <!-- /.col-lg-6 -->
+</template>
+
+<template name="asset_page_u">
+    <div class="col-lg-3">
+        <div class="panel panel-{{color}}">
+            <div class="panel-heading">
+                {{_ "holders"}}
+            </div>
+            <!-- /.panel-heading -->
+            <div class="panel-body" style="padding-left:0;padding-right:0;padding-top:0;padding-bottom:0;">
+                <div class="table-responsive" style="padding-left:0;padding-right:0;padding-top:0;padding-bottom:0;">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>{{_ "Name"}}</th>
+                                <th>{{_ "Balance2"}}({{get_asset_symbol}})</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{#each lists}}
+                            <tr>
+                                <td><a href="/u/{{u}}" style="{{style u}}"> {{u}} </a> </td>
+                                <td align="right">{{toFixed2 b 2}}</td>
+                            </tr>
+                            {{/each}}
+                        </tbody>
+                    </table>
+                </div>
+                <!-- /.table-responsive -->
+            </div>
+            <!-- /.panel-body -->
+        </div>
+        <!-- /.panel -->
+    </div>
+    <!-- /.col-lg-6 -->
+</template>
+
+<template name="opsItem">
+    {{# if equals t 0}} {{> opTransfer}} {{/if}}
+    {{# if equals t 3}} {{> opDebt}} {{/if}}
+    {{# if equals t 4}} {{> opTransaction}} {{/if}}
+</template>
+
+<template name="orderHistory">
+    <div class="list-group-item" style="background-color: #DCDCDC;"> 
+        {{# if equals t 1}}
+        <a href="/m/{{a_q}}_{{a_b}}" style="color:{{c}}"> <i class="fa fa-plus fa-fw"></i> </a>
+        {{else}}
+        <a href="/m/{{a_q}}_{{a_b}}" style="color:{{c}}"> <i class="fa fa-minus fa-fw"></i> </a>
+        {{/if}}
+        {{# if equals t2 'sell'}}
+        {{{_ "sell_order" (style a_b) (style a_q) (style u) u=u a_b=a_b a_q=a_q b_b=(format_float b_b 5) b_q=(format_float b_q 5) p=(format_price 'sell' p)}}}
+        {{else}}
+        {{{_ "buy_order" (style a_q) (style a_b) (style u) u=u a_b=a_b a_q=a_q b_b=(format_float b_b 5) b_q=(format_float b_q 5) p=(format_price 'sell' p)}}}
+        {{/if}}
+        <span class="pull-right text-muted small"><em>{{format_time (block_date B)}}</em> </span>
+    </div>
+</template>
+
+<template name="opTransfer">
+    <div class="list-group-item"> 
+        <i class="fa fa-send fa-fw"></i>  
+        {{{_ "sent_to" (style u_f) (style a) (style u_t) u_f=u_f u_t=u_t b=b a=a}}}
+        <span class="pull-right text-muted small"><em>{{format_time (block_date B)}}</em> </span>
+    </div>
+</template>
+<template name="opDebt">
+    <div class="list-group-item">
+        <i class="fa fa-undo fa-fw"></i>  
+        {{{_ "adjust_debt" (style u) (style a_c) (style a_d) u=u a_c=a_c a_d=a_d b_c=b_c b_d=b_d}}}
+        <span class="pull-right text-muted small"><em>{{format_time (block_date B)}}</em> </span>
+    </div>
+</template>
+<template name="opTransaction">
+    <div class="list-group-item"> 
+        <a href="/m/{{a_p}}_{{a_r}}" style="color:inherit"> <i class="fa fa-exchange fa-fw" style="{{trade_style a_p}}"></i>  </a>
+        {{{_ "filled" (style u_t) (style a_p) (style a_r) (style u_m) u_t=u_t u_m=u_m a_p=a_p a_r=a_r b_p=b_p b_r=b_r}}}
+        <span class="pull-right text-muted small"><em>{{format_time (block_date B)}}</em> </span>
+    </div>
+</template>
+<template name="opTrade">
+    <tr>
+        <td>{{format_time T}}</td>
+        <td style="color:{{c}}" align="right">{{format_price 'sell' p}}</td>
+        <td align="right">{{b}}</td>
+        <td align="right">{{v}}</td>
+        <td><a href="/u/{{u_t}}" style="{{style u_t}}"> {{u_t}} </a> </td>
+        <td><a href="/u/{{u_m}}" style="{{style u_m}}"> {{u_m}} </a> </td>
+    </tr>
+</template>
+
+<template name="order_book">
+    <div class="col-lg-5 ">
+        <div class="panel panel-{{color}}">
+            <div class="panel-heading">
+                {{_ type}} {{_ "orders"}}
+                {{# if currentUser}} 
+                <div class="pull-right">
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-default btn-xs" id="btn_config_bot">
+                            {{_ "bot"}}
+                            <span class="caret"></span>
+                        </button>
+                    </div>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-default btn-xs" onClick="collapse_order()">
+                            {{_ type}}
+                            <span class="caret"></span>
+                        </button>
+                    </div>
+                </div>
+                {{/if}}
+            </div>
+            <!-- /.panel-heading -->
+            <div class="panel-body" style="padding-left:0;padding-right:0;padding-top:0;padding-bottom:0;">
+                <div class="panel-collapse collapse order">
+                    <div class="panel-body" style="padding-left:0;padding-right:0;padding-top:0;padding-bottom:0;">
+                        <form role="form">
+                            <div class="form-group input-group">
+                                <span class="input-group-addon">{{_ "Price"}}:</span>
+                                <input type="text" class="form-control" value="0.0" id='price_{{type}}'>
+                                <span class="input-group-addon">{{getAsset 0}}/{{getAsset 1}}</span>
+                            </div>
+                            <div class="form-group input-group">
+                                <span class="input-group-addon">{{_ "Amount2"}}:</span>
+                                {{# if equals type 'buy'}}
+                                <input type="text" class="form-control" value="0.0" id='volume_{{type}}' disabled> 
+                                {{else}}
+                                <input type="text" class="form-control" value="0.0" id='volume_{{type}}'> 
+                                {{/if}}
+                                <span class="input-group-addon">{{getAsset 1}}</span>
+                            </div>
+                            <div class="form-group input-group">
+                                <span class="input-group-addon">{{_ "Value"}}:</span>
+                                {{# if equals type 'sell'}}
+                                <input type="text" class="form-control" value="0.0" id='value_{{type}}' disabled>
+                                {{else}}
+                                <input type="text" class="form-control" value="0.0" id='value_{{type}}'>
+                                {{/if}}
+                                <span class="input-group-addon">{{getAsset 0}}</span>
+                            </div>
+                            {{_ "usable balance"}}: {{toFixed2 (getBalance type) 4}} {{# if equals type 'buy'}} {{getAsset 0}} {{else}}  {{getAsset 1}} {{/if}}
+                            <div class="pull-right">
+                                <button type='button' onClick='do_limit_order("{{type}}")'>{{_ (type)}}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="panel-collapse collapse mm_bot">
+                    <div class="panel-body" style="padding-left:0;padding-right:0;padding-top:0;padding-bottom:0;">
+                        <form role="form">
+                            <div class="form-group input-group">
+                                <span class="input-group-addon">{{_ "Spread"}}:</span>
+                                <input type="text" class="form-control" placeholder={{_ "spread_desc"}} value="{{mm_config type 'spread'}}" id='mm_spread_{{type}}'>
+                                <span class="input-group-addon">%</span>
+                            </div>
+                            <div class="form-group input-group">
+                                <span class="input-group-addon">{{_ "Order Balance"}}:</span>
+                                <input type="text" class="form-control" placeholder={{_ "minimum balance is" 10}} value="{{mm_config type 'balance_cny'}}" id='mm_balance_{{type}}'>
+                                <span class="input-group-addon">CNY</span>
+                            </div>
+                            {{_ "usable balance"}}: {{toFixed2 (getBalance type) 4}} {{# if equals type 'buy'}} {{getAsset 0}} {{else}}  {{getAsset 1}} {{/if}}
+                            <div class="pull-right">
+                                <button type='button' onClick='execute_bots("{{type}}")'>{{_  "execute"}}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="panel-body" style="height:380px; overflow-y: scroll;padding-left:0;padding-right:0;padding-top:0;padding-bottom:0;">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th class="text-right">{{_ "Price"}}</th>
+                                    <th class="text-right">{{_ "Amount2"}}({{getAsset 1}})</th>
+                                    <th class="text-right">{{_ "Value"}}({{getAsset 0}})</th>
+                                    <th>{{_ "User"}}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {{#each lists}}
+                                <tr>
+                                    <td align="right">
+                                        {{# if currentUser}} 
+                                        <a onClick="do_init_order('{{../type}}', {{p}}, {{total}}, {{b}});">{{format_price 'sell' p}}</a>
+                                        {{else}}
+                                        {{format_price 'sell' p}}
+                                        {{/if}}
+                                    </td>
+                                    <td align="right">{{b}}</td>
+                                    <td align="right">{{v}}</td>
+                                    <td> 
+                                        {{# if equals u "_special"}}
+                                        <div> {{_ "trade with arbitrage bot"}}<i class="fa fa-gift fa-fw" style="color:{{../color}}"></i> </div>
+                                        {{else}}
+                                        <a href="/u/{{u}}" style="{{style u}}"> {{u}} </a>
+                                        {{# if isMine u}} <a onClick='do_remove_order({{id}})'> <i class="fa fa-times-circle fa-fw"></i> </a> {{/if}} 
+                                        {{/if}}
+                                    </td>
+                                </tr>
+                                {{/each}}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <!-- /.table-responsive -->
+            </div>
+            <!-- /.panel-body -->
+        </div>
+        <!-- /.panel -->
+    </div>
+    <!-- /.col-lg-6 -->
+</template>
+
+<template name="trx_list_page">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <i class="fa fa-exchange fa-fw"></i> {{_ 'Transaction history'}}
+                    <div class="pull-right">
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-default btn-xs" onClick="collapse_order_history()">
+                                {{_ "order history"}}
+                                <span class="caret"></span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <!-- .panel-heading -->
+                <div class="panel-body" style="padding-left:0;padding-right:0;padding-top:0;padding-bottom:0;">
+                    <div class="panel-collapse collapse order_history">
+                        <div class="panel-body" style="max-height:280px; overflow-y: scroll;padding-left:0;padding-right:0;padding-top:0;padding-bottom:0;">
+                            <div class="list-group">
+                                {{#each order_historys}}
+                                {{> orderHistory}}
+                                {{/each}}
+                            </div>
+                        </div>
+                    </div>
+                    {{# if isMarket}}
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>{{_ "Date"}}</th>
+                                    <th class="text-right">{{_ "Price"}}</th>
+                                    <th class="text-right">{{_ "Amount"}}</th>
+                                    <th class="text-right">{{_ "Balance"}}</th>
+                                    <th>taker</th>
+                                    <th>maker</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {{#each trade_lists}}
+                                {{> opTrade}}
+                                {{/each}}
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- /.table-responsive -->
+                    {{#if trx_more}}
+                    <div id="showMoreResults" style="margin-left: 25px;">
+                        <span class="loading">{{_ "Loading"}}...</span>
+                    </div>
+                    {{/if}}
+                    {{else}}
+                    <div class="list-group">
+                        {{#each trx_lists}}
+                        {{> opsItem}}
+                        {{/each}}
+                        {{#if trx_more}}
+                        <div id="showMoreResults" style="margin-left: 25px;">
+                            <span class="loading">{{_ "Loading"}}...</span>
+                        </div>
+                        {{/if}}
+                    </div>
+                    <!-- /.list-group -->
+                    {{/if}}
+                </div>
+                <!-- .panel-body -->
+            </div>
+            <!-- /.panel -->
+        </div>
+        <!-- /.col-lg-12 -->
+    </div>
+    <!-- /.row -->
+</template>
+
+<template name="new_page">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6 col-md-offset-3">
+                <div class="login-panel panel panel-primary">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">{{_ "Add account"}}<small class="pull-right">{{_ "or"}} <a href="login">{{_ "Login"}}</a></small></h3>
+                    </div>
+                    <div class="panel-body">
+                        <ul class="nav nav-tabs">
+                            <li class="active"><a href="#import" data-toggle="tab">{{_ "Import Active Private Key"}}</a> </li>
+                            <li><a href="#new" data-toggle="tab" style="display:none;">{{_ "Create New"}}</a> </li>
+                        </ul>
+
+                        <!-- Tab panes -->
+                        <div class="tab-content">
+                            <div class="tab-pane fade in active" id="import">
+                                <p>{{_ "Account"}}</p>
+                                <div class="form-group">
+                                    <tt><input class="form-control" id="account"  placeholder={{_ "account name"}} value=""></tt>
+                                </div>
+                                <p>{{_ "Input your private key"}}</p>
+                                <div class="form-group">
+                                    <tt><input class="form-control" id="private_key"  placeholder={{_ "Private Key"}} value=""></tt>
+                                </div>
+                                <p>{{_ "Input a password to protect your wallet file, you will need it when login"}}</p>
+                                <div class="form-group">
+                                    <input class="form-control" id="private_password" placeholder={{_ "Password"}} type="password" value="">
+                                    <div id="msg_private"></div>
+                                </div>
+                                <!-- Change this to a button or input when using this as a form -->
+                                <form role="form" action="/" onsubmit="return import_private_key()">
+                                    <fieldset>
+                                        <input type="SUBMIT" value={{_ "Submit"}} class="btn btn-lg btn-success btn-block">
+                                    </fieldset>
+                                </form>
+                            </div>
+                            <div class="tab-pane fade" id="new">
+                                <h4>Create New</h4>
+                                <p>The private key is generate random, you must backup it, can't recovery!</p>
+                                <div class="form-group">
+                                    <tt><input class="form-control" id="new_key" placeholder="Todo"  value="" readonly></tt>
+                                    <A href="#" onclick="refresh_key()"><span class="pull-right"><i class="fa fa-refresh"></i></span></A>
+                                </div>
+                                <p>Input a password to protect your wallet file, you will need it when login</p>
+                                <div class="form-group">
+                                    <input class="form-control" id="new_password" placeholder="Todo" type="password" value="">
+                                    <label id="msg_new"></label>
+                                </div>
+                                <!-- Change this to a button or input when using this as a form -->
+                                <form role="form" action="/" onsubmit="return create_new()">
+                                    <fieldset>
+                                        <input type="SUBMIT" value="Submit" class="btn btn-lg btn-success btn-block">
+                                    </fieldset>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<template name="login_page">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4 col-md-offset-4">
+                <div class="login-panel panel panel-primary">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">{{_ "Sign in"}}<small class="pull-right">{{_ "or"}} <a href="new">{{_ "Add account"}}</a></small></h3>
+                    </div>
+                    <div class="panel-body">
+                        <form class="form-signin" id="login-form">
+                        <div class="form-group">
+                            <label>{{_ "Select Account"}}</label>
+                            <select id="account" class="form-control">
+                                {{#each accounts}}
+                                <option>{{ account }}</option>
+                                {{/each}}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <input class="form-control" id="password" placeholder={{_ "Decrypt Password"}} type="password" value="">
+                            <label id="msg"></label>
+                        </div>
+                        <div class="form-group">
+                            <fieldset>
+                                <!-- Change this to a button or input when using this as a form -->
+                                <input type="submit" value={{_ "Login"}} class="btn btn-lg btn-success btn-block">
+                            </fieldset>
+                        </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<template name="settings_bots">
+    {{> bots_limit_panel}}
+    {{> local_price_panel}}
+</template>
+
+<template name="bots_limit_panel">
+    <div class="col-lg-3">
+        <div class="panel panel-green">
+            <div class="panel-heading">
+                {{_ "asset balance limit"}}
+                <div class="pull-right">
+                    <div class="btn-group">
+                        <button id="bots_limit_btn" type="button" class="btn btn-default btn-xs">
+                            {{_ "save"}}
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <!-- /.panel-heading -->
+            <div class="panel-body" style="padding-left:0;padding-right:0;padding-top:0;padding-bottom:0;">
+                <div class="table-responsive">
+                    <table id="bots_limit_table" class="table">
+                        <thead>
+                            <tr>
+                                <th>{{_ "Name"}}</th>
+                                <th>{{_ "Limit"}}(CNY)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>EXAMPLE.BTS</td>
+                                <td>1000.0</td>
+                            </tr>
+                            {{#each bots_limit_list}}
+                            <tr>
+                                <td>{{a}}</td>
+                                <td id="input" contenteditable='true'>{{b}}</td>
+                            </tr>
+                            {{/each}}
+                        </tbody>
+                    </table>
+            </div>
+            </div>
+            <!-- /.panel-body -->
+        </div>
+        <!-- /.panel -->
+    </div>
+    <!-- /.col-lg-6 -->
+</template>
+
+<template name="local_price_panel">
+    <div class="col-lg-3">
+        <div class="panel panel-green">
+            <div class="panel-heading">
+                {{_ "custom price"}}
+                <div class="pull-right">
+                    <div class="btn-group">
+                        <button id="local_price_btn" type="button" class="btn btn-default btn-xs">
+                            {{_ "save"}}
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <!-- /.panel-heading -->
+            <div class="panel-body" style="padding-left:0;padding-right:0;padding-top:0;padding-bottom:0;">
+                <div class="table-responsive">
+                    <table id="local_price_table" class="table">
+                        <thead>
+                            <tr>
+                                <th>{{_ "Name"}}</th>
+                                <th>{{_ "Price"}}</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>EXAMPLE.BTS</td>
+                                <td>0.8</td>
+                                <td>USD</td>
+                            </tr>
+                            {{#each local_price_list}}
+                            <tr>
+                                <td>{{base}}</td>
+                                <td id="input" contenteditable='true'>{{_price}}</td>
+                                <td id="input" contenteditable='true'>{{quote}}</td>
+                            </tr>
+                            {{/each}}
+                        </tbody>
+                    </table>
+            </div>
+            </div>
+            <!-- /.panel-body -->
+        </div>
+        <!-- /.panel -->
+    </div>
+    <!-- /.col-lg-6 -->
+</template>

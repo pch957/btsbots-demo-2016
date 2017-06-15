@@ -1,0 +1,21 @@
+{
+    "asset volume": "asset volume(%s day)" ,
+    "user volume": "user volume(%s day)",
+    "user profit": "user profit(%s day)",
+    "trade volume": "trade volume(%s day)",
+    "trade change": "trade balance(%s day)",
+    "market volume": "market volume(%s day)",
+    "sent_to": "<a href=/u/__u_f__ style=%s> __u_f__ </a> sent __b__ <a href=/a/__a__ style=%s>__a__</a> to <a href=/u/__u_t__ style=%s>__u_t__</a>",
+    "adjust_debt": " <a href=/u/__u__ style=%s> __u__ </a> adjust collateral by __b_c__  <a href=/a/__a_c__ style=%s>__a_c__</a> , debt by __b_d__  <a href=/a/__a_d__ style=%s>__a_d__</a>",
+    "filled": " <a href=/u/__u_t__ style=%s> __u_t__ </a> paid __b_p__  <a href=/a/__a_p__ style=%s>__a_p__</a> for __b_r__  <a href=/a/__a_r__ style=%s>__a_r__</a> from <a href=/u/__u_m__ style=%s> __u_m__ </a>",
+    "sell_order": "__b_b__  <a href=/a/__a_b__ style=%s>__a_b__</a> <i class='fa fa-exchange fa-fw'></i> __b_q__  <a href=/a/__a_q__ style=%s>__a_q__</a> <i class='fa fa-cny fa-fw'></i> __p__ __a_q__/__a_b__ <a href=/u/__u__ style=%s> <i class='fa fa-user fa-fw'></i>__u__ </a> ",
+    "buy_order": "__b_q__  <a href=/a/__a_q__ style=%s>__a_q__</a> <i class='fa fa-exchange fa-fw'></i> __b_b__  <a href=/a/__a_b__ style=%s>__a_b__</a> <i class='fa fa-cny fa-fw'></i> __p__ __a_q__/__a_b__ <a href=/u/__u__ style=%s> <i class='fa fa-user fa-fw'></i>__u__ </a> ",
+    "Amount2": "Amount",
+    "Balance2": "Balance",
+    "PageUser": "User: %s",
+    "PageAsset": "Asset: %s",
+    "PageMarket": "<a onclick=revert_market()>Market: __a1__/__a2__ __p__</a>",
+    "spread_desc": "value 2 means: price_buy=price_ref/(1+2/100), price_sell=price_ref*(1+2/100)",
+    "minimum balance is": "minimum balance is %s",
+    "Search": "Search"
+}

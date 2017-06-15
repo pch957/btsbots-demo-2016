@@ -1,0 +1,19 @@
+1. from script btsprice which used by witness
+1) all MPA issued by commiittee
+    "KRW", "BTC", "SILVER", "GOLD", "TRY",
+    "SGD", "HKD", "RUB", "SEK", "NZD", "CNY",
+    "MXN", "CAD", "CHF", "AUD", "GBP", "JPY",
+    "EUR", "USD", "TCNY", "TUSD", "ARS"
+2) some UIA issued by trusty gateway:
+    "BTC": ["OPEN.BTC", "TRADE.BTC"], "USD": ["OPEN.USD", "OPEN.USDT"],
+    "EUR": ["OPEN.EUR"], "CNY": ["OPEN.CNY"], "RUB": ["RUBLE"]}
+
+2. from exchange poloniex.com
+1) some UIA asset
+    "OPEN.ETH", "OPEN.DASH", "OPEN.STEEM", "OPEN.MAID", "OPEN.LTC", "OPEN.OMNI", "OPEN.LISK", "OPEN.DOGE", "OPEN.GRC"
+2) special SYMBOL can used in bots config page
+    "POLONIEX:USDT_BTC"
+
+3. all other asset's price are get from DEX's trade history with simple alg, 
+   it's not trusted enough if the depth is bad, you'd better set a custom price for these assets.
+   and there are no price from some assets, because they are lack of trade history
