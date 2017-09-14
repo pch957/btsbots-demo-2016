@@ -342,7 +342,7 @@ class MonitorHelper(object):
             _b_b, __ = yield from self.get_b(_info2['base'])
             _b_q, __ = yield from self.get_b(_info2['quote'])
             if _b_b != 0:
-                _o['d_f'] = _b_fee * _b_q / _b_b
+                _o['d_f'] = _b_fee * _b_b / _b_q
             else:
                 _o['d_f'] = 0
         self.db_order.insert_one(_o)
